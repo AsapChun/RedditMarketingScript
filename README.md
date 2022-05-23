@@ -1,5 +1,6 @@
 # RedditMarketingScript
 Mass market to users on reddit for desired subreddits
+
 Reddit Script Prefences: https://www.reddit.com/prefs/apps
 
 PRAW documentation:  https://praw.readthedocs.io/en/latest/index.html
