@@ -13,5 +13,5 @@ Before running:
 - Change designated fields before running
 
 How To Run:
-python reddit.py
+`python3 reddit.py`
 
