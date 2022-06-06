@@ -2,6 +2,7 @@ import requests
 import praw
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -17,7 +18,7 @@ reddit = praw.Reddit(client_id =REDDIT_CLIENT_ID,
                      password =REDDIT_PASSWORD)
 
 #enter subreddits we want to message to
-list_of_subreddits = set(['test', 'budgeting'])
+list_of_subreddits = set(['financialindependence'])
 user_subreddit_dic = {}
 
 #Grab and send messages to post author and subsequent comments in searched subreddits
@@ -40,12 +41,43 @@ for subreddit in list_of_subreddits:
 
 # print(user_subreddit_dic)
 
+# TODO: Rate limit handling--> add timer to pause sending messages
+def rateLimitHandling():
+  print("Pausing for 5 mins")
+  time.sleep(60)
+  print("Pausing for 4 mins")
+  time.sleep(60)
+  print("Pausing for 3 mins")
+  time.sleep(60)
+  print("Pausing for 2 mins")
+  time.sleep(60)
+  print("Pausing for 1 mins")
+  time.sleep(60)
+  print("Done")
+
 # Send message to all users
 for subreddit in list_of_subreddits:
+  numOfMessages = 0
   user_list = user_subreddit_dic[subreddit]
   for user in user_list:
-    try: 
-      reddit.redditor(user).message(subject= '<ENTER_A_TITLE>', message= '<ENTER_MESSAGE>')
+    try:
+      if (numOfMessages >= 10) :
+        rateLimitHandling()
+        numOfMessages = 0
+      
+      message= (f"Hey, {user} hope you are well! I’m a recent college grad / aspiring entrepreneur on r/{subreddit}." 
+      " I'm building a budgeting chrome extension (similar to honey, except we show you your personal finances instead"  
+      " of coupons, so you can make informed shopping decisions). I made it because I have a ton of anxiety buying stuff lmao," 
+      " I’m still not used to having a salary compared to being broke in college. "  
+      " We have a user testing experiment out right now; do you mind checking it out and lmk what you think of our idea?" 
+      f" We are actively building it rn and would love feedback. You can find it here: https://t.maze.co/92145647?reddituser={user}&subreddit={subreddit} "
+      " I also recognize that I could seem scammy sending you a link; Maze is a trusted industry survey tool used by huge companies like Uber."
+      " Our survey is vetted and hosted entirely by them, you can see their website here: https://maze.co/ " 
+      " Thanks again!")
+      title = "Aspiring entreprenuer looking to get your feedback!"
+      reddit.redditor(user).message(subject= title, message= message)
       print("message successfully sent to " + user)
-    except: 
-      print("handling user object exception")
+      numOfMessages += 1
+    except Exception as e:
+      print("handling user object exception: ")
+      print(e)
