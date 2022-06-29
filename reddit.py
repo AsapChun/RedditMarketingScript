@@ -3,13 +3,15 @@ import praw
 import os
 from dotenv import load_dotenv
 import time
+from praw.models import Message
+
 
 load_dotenv()
 
-REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
-REDDIT_SECRET_ID = os.getenv('REDDIT_SECRET_ID')
-REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
-REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
+REDDIT_CLIENT_ID = '###'
+REDDIT_SECRET_ID = '###'
+REDDIT_USERNAME = '###'
+REDDIT_PASSWORD = '###'
 
 reddit = praw.Reddit(client_id =REDDIT_CLIENT_ID,
                      client_secret =REDDIT_SECRET_ID,
@@ -18,28 +20,38 @@ reddit = praw.Reddit(client_id =REDDIT_CLIENT_ID,
                      password =REDDIT_PASSWORD)
 
 #enter subreddits we want to message to
-list_of_subreddits = set(['digitalnomad'])
+list_of_subreddits = set(['FashionReps', 'womensstreetwear'])
 user_subreddit_dic = {}
 
-#Grab and send messages to post author and subsequent comments in searched subreddits
+# Gather list of users already messaged
+users_messaged = []
+for Message in reddit.inbox.sent(limit=10000):
+  users_messaged.append(Message.dest)
+
+# Grab and send messages to post author and subsequent comments in searched subreddits
+# Do not send message to any users already messaged
 for subreddit in list_of_subreddits:
   unique_user_set = set([])
   # Different search filters available 
-  # for submission in reddit.subreddit(subreddit).controversial(time_filter="month"):
+  for submission in reddit.subreddit(subreddit).new(limit=10):
+  # for submission in reddit.subreddit(subreddit).controversial(time_filter="week"):
   # for submission in reddit.subreddit(subreddit).top(time_filter="all", limit=25):
-  for submission in reddit.subreddit(subreddit).hot(limit=25):
-      try:
-        unique_user_set.add(submission.author.name)
-        for comment in submission.comments:
-          try:
-            unique_user_set.add(comment.author.name)
-          except:
-            print("handling comment object exception")
-      except:
-        print("handling submission object exception")      
-  user_subreddit_dic.update({subreddit: unique_user_set})
+  # for submission in reddit.subreddit(subreddit).hot(limit=25):
+    if submission.author.name not in users_messaged:
+        try:
+          unique_user_set.add(submission.author.name)
+          for comment in submission.comments:
+            try:
+              unique_user_set.add(comment.author.name)
+            except Exception as e:
+              print("handling comment object exception")
+              print(e)
+        except Exception as e:
+          print("handling submission object exception")      
+          print(e)
+    user_subreddit_dic.update({subreddit: unique_user_set})
 
-# print(user_subreddit_dic)
+print(user_subreddit_dic)
 
 # TODO: Rate limit handling--> add timer to pause sending messages
 def rateLimitHandling():
@@ -64,7 +76,7 @@ for subreddit in list_of_subreddits:
       if (numOfMessages == 50) :
         break
 
-      message= (f"Hey {user} hope you are well! I'm a digital nomad / aspiring entrepreneur,"
+      message= (f"Hey {user} hope you are well! I'm a recent college grad / aspiring entrepreneur / fashion-lover,"
       f" it's great to meet you! I saw you were in r/{subreddit} and thought this may be applicable to you; "
       "would love to tell you more about my idea, but want to make sure you're interested first to avoid spamming you")
 
@@ -77,7 +89,7 @@ for subreddit in list_of_subreddits:
       # " I also recognize that I could seem scammy sending you a link; Maze is a trusted industry survey tool used by huge companies like Uber."
       # " Our survey is vetted and hosted entirely by them, you can see their website here: https://maze.co/ " 
       # " Thanks again!")
-      title = "A potential solution for budget traveling!"
+      title = "Got a quick sec?"
       reddit.redditor(user).message(subject= title, message= message)
       rateLimitHandling()
       print("message successfully sent to " + user)
