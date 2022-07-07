@@ -12,10 +12,10 @@ import re
 load_dotenv()
 
 
-REDDIT_CLIENT_ID = '###'
-REDDIT_SECRET_ID = '###'
-REDDIT_USERNAME = '###'
-REDDIT_PASSWORD = '###'
+REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+REDDIT_SECRET_ID = os.getenv('REDDIT_SECRET_ID')
+REDDIT_USERNAME = os.getenv('REDDIT_USERNAME')
+REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
 
 reddit = praw.Reddit(client_id =REDDIT_CLIENT_ID,
                      client_secret =REDDIT_SECRET_ID,
